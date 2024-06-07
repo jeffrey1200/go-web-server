@@ -22,7 +22,7 @@ func main() {
 	mux.Handle("/app/*", apiCfg.middlewareMetricsInc(http.StripPrefix("/app", fileHandler)))
 	mux.HandleFunc("GET /api/healthz", handleReadiness)
 	mux.HandleFunc("GET /api/reset", apiCfg.handlerReset)
-
+	mux.HandleFunc("POST /api/validate_chirp", handlerChirpsValidate)
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
 
 	srv := http.Server{
