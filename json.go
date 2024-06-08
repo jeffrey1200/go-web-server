@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // type jsonRequest struct {
@@ -20,8 +21,11 @@ func handlerChirpsValidate(w http.ResponseWriter, r *http.Request) {
 		Body string `json:"body"`
 	}
 	type returnVals struct {
-		Valid bool `json:"valid"`
+		CleanedBody string `json:"cleaned_body"`
 	}
+	// type cleanedReturnVals struct {
+	// Cleaned_body string `json:"cleaned_body"`
+	// }
 	decoder := json.NewDecoder(r.Body)
 	params := paramaters{}
 	err := decoder.Decode(&params)
@@ -34,9 +38,40 @@ func handlerChirpsValidate(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Chirp is too long")
 		return
 	}
+	badWords := map[string]struct{}{
+		"kerfuffle": {},
+		"sharbert":  {},
+		"fornax":    {},
+	}
+	cleanedString := returnVals{CleanedBody: removeProfaneWords(params.Body, badWords)}
+	respondWithJSON(w, http.StatusOK, cleanedString)
 
-	respondWithJSON(w, http.StatusOK, returnVals{Valid: true})
+}
 
+func removeProfaneWords(words string, badWords map[string]struct{}) string {
+
+	separatedWords := strings.Split(words, " ")
+	// log.Print(words)
+	for i, word := range separatedWords {
+		loweredWord := strings.ToLower(word)
+		if _, ok := badWords[loweredWord]; ok {
+			separatedWords[i] = "****"
+		}
+		// separatedWords[i] = strings.ToLower(word)
+		// if strings.HasSuffix(separatedWords[i], "!") {
+		// 	continue
+		// 	}
+		// log.Printf("the separated words are: %s", separatedWords[i])
+		// if strings.ToLower(separatedWords[i]) == "kerfuffle" || strings.ToLower(separatedWords[i]) == "sharbert" || strings.ToLower(separatedWords[i]) == "fornax" {
+
+		// separatedWords[i] = strings.ReplaceAll(separatedWords[i], "kerfuffle", "****")
+		// separatedWords[i] = strings.ReplaceAll(separatedWords[i], "sharbert", "****")
+		// separatedWords[i] = strings.ReplaceAll(separatedWords[i], "Fornax", "****")
+		// }
+	}
+	normalizedString := strings.Join(separatedWords, " ")
+
+	return normalizedString
 }
 
 func respondWithError(w http.ResponseWriter, code int, msg string) {
