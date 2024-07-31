@@ -1,8 +1,11 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/jeffrey1200/go-web-server/internal/database"
 )
@@ -16,7 +19,20 @@ func main() {
 	const filePathRoot = "."
 	const port = "8080"
 
-	db, err := database.NewDB("/home/jeffrey/Documents/go-web-server/database.json")
+	dbg := flag.Bool("debug", false, "Enable debug mode")
+	flag.Parse()
+
+	if *dbg {
+		fmt.Println("Debug mode enabled. Deleting the database")
+		err := os.Remove("database.json")
+		if err != nil {
+			fmt.Printf("Error deleting the database: %v\n", err)
+			return
+		}
+		fmt.Println("Database deleted successfully.")
+	}
+
+	db, err := database.NewDB("database.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -33,6 +49,7 @@ func main() {
 	mux.HandleFunc("POST /api/chirps", apiCfg.handlerChirpsCreate)
 	mux.HandleFunc("GET /api/chirps", apiCfg.handlerChirpsRetrieve)
 	mux.HandleFunc("GET /api/chirps/{id}", apiCfg.handlerRetrieveChirpById)
+	mux.HandleFunc("POST /api/users", apiCfg.handlerUsersCreate)
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
 
 	srv := http.Server{

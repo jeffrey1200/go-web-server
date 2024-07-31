@@ -44,8 +44,5 @@ func (cfg *apiConfig) handlerRetrieveChirpById(w http.ResponseWriter, r *http.Re
 
 		respondWithJSON(w, http.StatusOK, dbChirp)
 	}
-	// if strings == 0 {
-	// 	respondWithError(w,http.StatusNotFound,"This chirp doesn't exist")
-	// }
 
 }
